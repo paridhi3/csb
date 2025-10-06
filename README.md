@@ -8,16 +8,30 @@ Reader Agent → Categorizer Agent
 ```
 Input (file or web link)
         ↓
-Reader Agent → metadata.json (text, images, video)
+Reader Agent
+    → Extract metadata (summary, keywords, images_text, video_text)
+    → Generate embedding for the case study
+    → Store metadata + embedding in Chroma
         ↓
-Categorizer Agent → assign category/domain + confidence
+Categorizer Agent
+    → Query Chroma for top-N similar case studies
+    → For each top-N neighbor:
+        → LLM semantic check: validate if category/domain can be inherited
+    → Combine embedding similarity + LLM semantic agreement → final category/domain + confidence
+    → If no similar case or low confidence → LLM assigns category/domain
+    → Update Chroma with enriched metadata + embedding
         ↓
-Validator Agent → check confidence & consistency
+Validator Agent
+    → Check category/domain confidence against thresholds
+    → Check consistency with similar case studies (query Chroma if needed)
+    → Flag low-confidence or inconsistent entries
         ↓
-[if issues] → Self-Healer Agent → correct category/domain
+Self-Healer Agent
+    → Re-run hybrid categorization for flagged entries
+    → Update metadata + confidence
+    → Update Chroma
         ↓
-Final validated metadata.json → ready for downstream use
-
+Final validated metadata.json stored in Chroma
 ```
 ## 1. Reader agent
 **Goal**: Extract structured metadata from any input (file or web link), handling text, images, videos, and embedded text.
