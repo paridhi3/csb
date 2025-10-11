@@ -1,0 +1,6 @@
+streamlit
+fastmcp
+langchain
+langchain_openai
+python-dotenv
+requests
